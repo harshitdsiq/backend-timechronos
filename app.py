@@ -3,9 +3,11 @@ from config import Config
 from utils.models import db
 from utils.routes import auth_bp
 from flask_jwt_extended import  JWTManager
+from flask_cors import CORS
 def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
+    
     
     db.init_app(app)
     jwt = JWTManager(app)
@@ -17,6 +19,13 @@ def create_app():
     return app
 
 app = create_app()
+CORS(app, resources={
+    r"/*" : {
+    "origins":
+        "*"
+        }
+    }
+)
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True,host='0.0.0.0')
