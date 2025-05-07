@@ -1,0 +1,57 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment
+venv/
+env/
+ENV/
+.venv/
+
+# Environment variables
+*.env
+.env
+.env.*
+
+# Flask instance folder (if used)
+instance/
+
+# Database files
+*.sqlite3
+*.db
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Pytest cache
+.pytest_cache/
+
+# Coverage reports
+htmlcov/
+coverage.xml
+*.cover
+
+# VS Code and other IDEs
+.vscode/
+.idea/
+
+# Logs
+*.log
+
+# Migrations
+migrations/
+
+# Compiled HTML/static assets (optional if built dynamically)
+staticfiles/
+
+# Jupyter Notebooks (if not used for dev)
+*.ipynb_checkpoints
+
+# Gunicorn log files
+gunicorn.log
+
+# Docker-related (if used)
+*.pid
+*.tar
