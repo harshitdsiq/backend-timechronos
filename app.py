@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask,jsonify
 from config import Config
 from utils.models import db
 from utils.routes import auth_bp
@@ -26,6 +26,9 @@ CORS(app, resources={
         }
     }
 )
+@app.route('/')
+def hello_world():
+    return jsonify(message="Hello World"), 200
 
 if __name__ == '__main__':
     app.run(debug=True,host='0.0.0.0')
