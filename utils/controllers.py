@@ -1,4 +1,4 @@
-from .models import db, Company, User , Client, Project,ProjectStatus,Task,Timesheet,TimesheetStatus
+from .models import db, Company, User , Client, Project,ProjectStatus,Task,Timesheet,TimesheetStatus,UserRole
 from datetime import datetime
 from werkzeug.security import generate_password_hash,check_password_hash
 from sqlalchemy.exc import IntegrityError
@@ -15,6 +15,9 @@ def register_user(first_name, last_name, email, password, company_id, role, phon
 
         if not Company.query.get(company_id):
             return {"error": "Company not found"}, 404
+        
+        if role != 'ADMIN':
+            return {"error":"only admins are allowed"}
 
         new_user = User(
             first_name=first_name,
@@ -53,7 +56,7 @@ def login_user(email, password):
     }, 200
 
 def register_company(name, industry, email_domain, contact_email, 
-                    contact_number,password, address=None):
+                    contact_number,password, address=None): #code
     try:
         if Company.query.filter_by(email_domain=email_domain).first():
             return jsonify({
@@ -153,7 +156,7 @@ def create_project(data):
         end_date=datetime.strptime(data['end_date'], '%Y-%m-%d'),
         default_billable=data.get('default_billable', True),
         employee_rate=data['employee_rate'],
-        status=ProjectStatus[data['status'].upper()]  # Ensure valid status enum
+        status=ProjectStatus[data['status'].upper()]  
     )
 
     try:
