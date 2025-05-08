@@ -76,7 +76,7 @@ def companyLogin():
         address=data.get('address')
     )
 
-@auth_bp.route("/update-company/<int:company_id>", methods=['PUT'])
+@auth_bp.route("/update-profile/<int:company_id>", methods=['PUT'])
 def update_company(company_id):
     data = request.get_json()
     return update_company_details(
