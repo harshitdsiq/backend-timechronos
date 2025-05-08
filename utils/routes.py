@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from .controllers import  register_company,register_user,login_user,register_client,login_client,create_project,create_task
+from .controllers import  register_company,register_user,login_user,register_client,login_client,create_project,create_task,create_timesheet
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 from .models import db, User
@@ -128,3 +128,22 @@ def register_task():
         description=data.get('description', '')
     )
     return jsonify(response), status_code
+
+
+@auth_bp.route("/timesheets", methods=['POST'])
+def create_timesheet_route():
+    data = request.get_json()
+    
+    if not data or 'week_start' not in data or 'user_id' not in data:
+        return jsonify({
+            "error": "Both user_id and week_start are required",
+            "example_request": {
+                "user_id": 1,
+                "week_start": "2023-06-12"
+            }
+        }), 400
+        
+    return create_timesheet(
+        user_id=data['user_id'],  
+        week_start=data['week_start']
+    )

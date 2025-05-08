@@ -1,4 +1,4 @@
-from .models import db, Company, User , Client, Project,ProjectStatus,Task
+from .models import db, Company, User , Client, Project,ProjectStatus,Task,Timesheet,TimesheetStatus
 from datetime import datetime
 from werkzeug.security import generate_password_hash,check_password_hash
 from sqlalchemy.exc import IntegrityError
@@ -211,3 +211,41 @@ def create_task(project_id, name, code, billable, start_date, end_date, descript
     except IntegrityError:
         db.session.rollback()
         return {"error": "Database error, possibly a conflict in data"}, 500
+
+
+def create_timesheet(user_id, week_start):
+    try:
+        from .models import User  
+        if not User.query.get(user_id):
+            return {"error": "User not found"}, 404
+
+        
+        week_start_date = datetime.strptime(week_start, '%Y-%m-%d').date()
+        
+        if Timesheet.query.filter_by(user_id=user_id, week_start=week_start_date).first():
+            return {"error": "Timesheet exists for this week"}, 409
+
+        new_timesheet = Timesheet(
+            user_id=user_id,
+            week_start=week_start_date,
+            status=TimesheetStatus.DRAFT
+        )
+        
+        db.session.add(new_timesheet)
+        db.session.commit()
+        
+        return {
+            "message": "Timesheet created",
+            "timesheet": {
+                "id": new_timesheet.id,
+                "user_id": new_timesheet.user_id,
+                "week_start": new_timesheet.week_start.isoformat(),
+                "status": new_timesheet.status.value
+            }
+        }, 201
+
+    except ValueError:
+        return {"error": "Invalid date format. Use YYYY-MM-DD"}, 400
+    except Exception as e:
+        db.session.rollback()
+        return {"error": str(e)}, 500
