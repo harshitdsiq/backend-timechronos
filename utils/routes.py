@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from .controllers import  register_company,register_user,login_user,register_client,login_client,create_project,create_task,create_timesheet,update_company_details
+from .controllers import  register_company,register_user,login_user,register_client,login_client,create_project,create_task,create_timesheet,update_company_details,get_company_details
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 from .models import db, User
@@ -60,6 +60,14 @@ def login():
         "user": response['user']
     }), 200
 
+# @auth_bp.route("/update-user-profile/<int:id>",methods=['PUT'])
+# def updateProfile(id):
+#     data = request.get_json()
+#     return update_user_profile(
+#         first_name = data.get('first_name'),
+#         last_name = data.get('last_name'),
+#         email= data.get('email'),
+#     )
 
 
 #company registration
@@ -87,6 +95,10 @@ def update_company(company_id):
         contact_number=data.get('contact_number'),
         address=data.get('address')
     )
+
+@auth_bp.route("/admin/<int:company_id>", methods=['GET'])
+def get_company(company_id):
+    return get_company_details(company_id)
 
 
 #client

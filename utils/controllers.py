@@ -312,7 +312,6 @@ def update_company_details(company_id, name, email_domain, contact_email, contac
                 return jsonify({"error": "Email domain already used by another company."}), 400
             company.email_domain = email_domain.lower()
 
-        # Update other fields if provided
         if name:
             company.name = name
         if contact_email:
@@ -342,3 +341,24 @@ def update_company_details(company_id, name, email_domain, contact_email, contac
             "error": "Database error occurred",
             "details": str(e)
         }), 500
+    
+def get_company_details(company_id):
+    company = Company.query.get(company_id)
+
+    if not company:
+        return jsonify({"error": "Company not found"}), 404
+
+    return jsonify({
+        "company": {
+            "id": company.id,
+            "name": company.name,
+            "industry": company.industry,
+            "email_domain": company.email_domain,
+            "contact_email": company.contact_email,
+            "contact_number": company.contact_number,
+            "address": company.address,
+            "created_at": company.created_at.isoformat()
+        }
+    }), 200
+#def update_user_profile(first_name,last_name,email):
+    
