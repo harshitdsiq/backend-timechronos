@@ -19,7 +19,12 @@ class ProjectStatus(PyEnum):
     ACTIVE = "active"
     COMPLETED = "completed"
 
-    
+class TimesheetStatus(PyEnum):
+    DRAFT = 'draft'
+    SUBMITTED = 'submitted'
+    APPROVED = 'approved'
+    REJECTED = 'rejected'
+    RECALLED = 'recalled'
 
 class Company(db.Model):
     __tablename__ = 'companies'
@@ -95,3 +100,26 @@ class Task(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
 
     project = db.relationship('Project', backref='tasks')
+
+
+
+
+class Timesheet(db.Model):
+    __tablename__ = 'timesheets'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users1.id'), nullable=False)
+    week_start = db.Column(db.Date, nullable=False)
+    status = db.Column(db.Enum(TimesheetStatus), 
+                     nullable=False, 
+                     default=TimesheetStatus.DRAFT)
+    submitted_at = db.Column(db.DateTime)
+    approved_at = db.Column(db.DateTime)
+    rejected_at = db.Column(db.DateTime)
+    rejection_reason = db.Column(db.Text)
+    recalled_at = db.Column(db.DateTime)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, 
+                         onupdate=datetime.utcnow, nullable=False)
+    
+    user = db.relationship('User', backref='timesheets')
