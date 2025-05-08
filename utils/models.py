@@ -124,3 +124,16 @@ class Timesheet(db.Model):
                          onupdate=datetime.utcnow, nullable=False)
     
     user = db.relationship('User', backref='timesheets')
+
+
+class Role(db.Model):
+    __tablename__ = 'roles'
+
+    id = db.Column(db.Integer, primary_key=True)
+    company_id = db.Column(db.Integer, db.ForeignKey('companies.id'), nullable=False)
+    name = db.Column(db.String(50), nullable=False)
+    description = db.Column(db.Text, nullable=True)
+    permissions = db.Column(db.Text, nullable=True)  # Can be a JSON string or comma-separated
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    company = db.relationship('Company', backref=db.backref('roles', lazy=True))

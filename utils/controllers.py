@@ -1,4 +1,4 @@
-from .models import db, Company, User , Client, Project,ProjectStatus,Task,Timesheet,TimesheetStatus,UserRole
+from .models import db, Company, User , Client, Project,ProjectStatus,Task,Timesheet,TimesheetStatus,UserRole,Role
 from datetime import datetime
 from werkzeug.security import generate_password_hash,check_password_hash
 from sqlalchemy.exc import IntegrityError
@@ -16,8 +16,8 @@ def register_user(first_name, last_name, email, password, company_id, role, phon
         if not Company.query.get(company_id):
             return {"error": "Company not found"}, 404
         
-        if role != 'ADMIN':
-            return {"error":"only admins are allowed"}
+        # if role != 'ADMIN':
+        #     return {"error":"only admins are allowed"}
 
         new_user = User(
             first_name=first_name,
@@ -76,10 +76,51 @@ def register_company(name, industry, email_domain, contact_email,
         )
         db.session.add(new_company)
         db.session.commit()
+        
+
+        # Create default admin role
+        admin_role = Role(
+            company_id=new_company.id,
+            name='Admin',
+            description='Full administrative access',
+            permissions='all',
+            created_at=datetime.utcnow()
+        )
+        db.session.add(admin_role)
+        db.session.flush()
+
+        # admin_user = User(
+        #     company_id=new_company.id,
+        #     role_id=admin_role.id,
+        #     first_name=contact_email.split('@')[0],
+        #     email=contact_email,
+        #     password_hash=generate_password_hash(password),
+        #     role='admin',
+        #     status='active',
+        #     created_at=datetime.utcnow()
+        # )
+        admin_user = User(
+        company_id=new_company.id,
+        first_name=contact_email.split('@')[0],
+        last_name="Admin",  # Required by model
+        email=contact_email,
+        password=generate_password_hash(password),
+        role=UserRole.ADMIN,  
+        #status='active',
+        created_at=datetime.utcnow()
+)
+        db.session.add(admin_user)
+
+        db.session.commit()
 
         return jsonify({
             "message": "Company registered successfully",
-            "company_id": new_company.id
+            "company_id": new_company.id,
+            "admin_user": {
+                "id": admin_user.id,
+                "email": admin_user.email,
+                "role": "admin"
+            }
         }), 201
 
     except IntegrityError as e:
@@ -253,3 +294,51 @@ def create_timesheet(user_id, week_start):
     except Exception as e:
         db.session.rollback()
         return {"error": str(e)}, 500
+
+
+def update_company_details(company_id, name, email_domain, contact_email, contact_number, address):
+    try:
+        company = Company.query.get(company_id)
+
+        if not company:
+            return jsonify({"error": "Company not found"}), 404
+
+        if email_domain:
+            existing = Company.query.filter(
+                Company.email_domain == email_domain.lower(),
+                Company.id != company_id
+            ).first()
+            if existing:
+                return jsonify({"error": "Email domain already used by another company."}), 400
+            company.email_domain = email_domain.lower()
+
+        # Update other fields if provided
+        if name:
+            company.name = name
+        if contact_email:
+            company.contact_email = contact_email
+        if contact_number:
+            company.contact_number = contact_number
+        if address:
+            company.address = address
+
+        db.session.commit()
+
+        return jsonify({
+            "message": "Company details updated successfully",
+            "company": {
+                "id": company.id,
+                "name": company.name,
+                "email_domain": company.email_domain,
+                "contact_email": company.contact_email,
+                "contact_number": company.contact_number,
+                "address": company.address
+            }
+        }), 200
+
+    except IntegrityError as e:
+        db.session.rollback()
+        return jsonify({
+            "error": "Database error occurred",
+            "details": str(e)
+        }), 500
