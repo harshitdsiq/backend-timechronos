@@ -3,6 +3,7 @@ from config import Config
 from utils.models import db
 from utils.routes import auth_bp
 from flask_jwt_extended import  JWTManager
+from flask_migrate import Migrate
 from flask_cors import CORS
 def create_app():
     app = Flask(__name__)
@@ -10,6 +11,7 @@ def create_app():
     
     
     db.init_app(app)
+    migrate = Migrate(app, db)
     jwt = JWTManager(app)
     app.register_blueprint(auth_bp, url_prefix='/auth')
 
