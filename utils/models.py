@@ -36,6 +36,7 @@ class Company(db.Model):
     contact_email = db.Column(db.String(100), nullable=False)
     contact_number = db.Column(db.String(20))
     address = db.Column(db.Text)
+    password = db.Column(db.String(255))
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
 
 

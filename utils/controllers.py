@@ -53,7 +53,7 @@ def login_user(email, password):
     }, 200
 
 def register_company(name, industry, email_domain, contact_email, 
-                    contact_number, address=None):
+                    contact_number,password, address=None):
     try:
         if Company.query.filter_by(email_domain=email_domain).first():
             return jsonify({
@@ -68,6 +68,7 @@ def register_company(name, industry, email_domain, contact_email,
             contact_email=contact_email,
             contact_number=contact_number,
             address=address,
+            password = generate_password_hash(password),
             created_at=datetime.utcnow()
         )
         db.session.add(new_company)

@@ -13,7 +13,7 @@ from flask_jwt_extended import (
 auth_bp = Blueprint('auth', __name__)
 
 
-
+#user login and signup
 @auth_bp.route('/signup', methods=['POST'])
 def signup():
     data = request.get_json()
@@ -42,6 +42,7 @@ def login():
     response, status_code = login_user(
         email=data['email'],
         password=data['password']
+        
     )
 
     if status_code != 200:
@@ -60,6 +61,8 @@ def login():
     }), 200
 
 
+
+#company registration
 @auth_bp.route("/company-registration",methods=['POST'])
 def companyLogin():
     data = request.get_json()
@@ -69,6 +72,7 @@ def companyLogin():
         email_domain=data.get('email_domain'),
         contact_email=data.get('contact_email'),
         contact_number=data.get('contact_number'),
+        password = data.get('password'),
         address=data.get('address')
     )
 
@@ -102,6 +106,8 @@ def client_login():
     return jsonify(response), status_code
 
 
+
+#projects
 @auth_bp.route("/projects",methods=['POST'])
 def create_new_project():
     data = request.get_json()
@@ -109,7 +115,9 @@ def create_new_project():
     return jsonify(response),status_code
 
 
- 
+
+
+#tasks 
 @auth_bp.route("/tasks",methods=['POST'])
 def register_task():
     data = request.get_json()
@@ -130,6 +138,9 @@ def register_task():
     return jsonify(response), status_code
 
 
+
+
+#timesheets
 @auth_bp.route("/timesheets", methods=['POST'])
 def create_timesheet_route():
     data = request.get_json()
