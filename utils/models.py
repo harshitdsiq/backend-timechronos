@@ -26,6 +26,11 @@ class TimesheetStatus(PyEnum):
     REJECTED = 'rejected'
     RECALLED = 'recalled'
 
+class UserStatus(PyEnum):
+    ACTIVE = 'active'
+    INACTIVE = 'inactive'
+    SUSPENDED = 'suspended'
+
 class Company(db.Model):
     __tablename__ = 'companies'
     
@@ -54,6 +59,7 @@ class User(db.Model):
     role = db.Column(SQLAlchemyEnum(UserRole), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     company = db.relationship('Company', backref='users')
+    #status = db.Column(SQLAlchemyEnum(UserStatus), default=UserStatus.ACTIVE,nullable=True)
 
 
 
