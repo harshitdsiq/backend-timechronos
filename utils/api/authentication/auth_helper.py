@@ -9,14 +9,15 @@ auth_helper = Blueprint('auth_helper', __name__)
 jwt = JWTManager()
 
 class passwordHelper:
-    def hash_password(self, password):
+    @staticmethod
+    def hash_password(password):
         try: 
             hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
             return hashed_password.decode('utf-8')
         except Exception as e:
             return jsonify({'message': 'Error hashing password: ' + str(e)}), 500
 
-    def check_password(self, password, hashed):
+    def check_password( password, hashed):
         try:
             return bcrypt.checkpw(password.encode('utf-8'), hashed.encode('utf-8'))
         except Exception as e:

@@ -5,7 +5,15 @@ from sqlalchemy.exc import IntegrityError,SQLAlchemyError
 from enum import Enum 
 from flask import jsonify
 from flask_jwt_extended import create_access_token, create_refresh_token
+from utils.api.authentication.auth_helper import passwordHelper
+from utils.api.authentication.auth_helper import AccessTokens
 from datetime import timedelta
+from utils.schema.models import UserRole, ProjectStatus, TimesheetStatus
+
+
+
+pwd_helper = passwordHelper()
+
 def register_user(first_name, last_name, email, password, company_id, role, phone=None):
     try:
         if not all([first_name, last_name, email, password, company_id, role]):
@@ -72,7 +80,7 @@ def register_company(name, industry, email_domain, contact_email,
             contact_email=contact_email,
             contact_number=contact_number,
             address=address,
-            password = generate_password_hash(password),
+            password = pwd_helper.hash_password(password),
             created_at=datetime.utcnow()
         )
         db.session.add(new_company)
@@ -105,7 +113,7 @@ def register_company(name, industry, email_domain, contact_email,
         first_name=contact_email.split('@')[0],
         last_name="Admin",  # Required by model
         email=contact_email,
-        password=generate_password_hash(password),
+        password=passwordHelper.hash_password(password),
         role=UserRole.ADMIN,  
         #status='active',
         created_at=datetime.utcnow()
@@ -126,6 +134,7 @@ def register_company(name, industry, email_domain, contact_email,
 
     except IntegrityError as e:
         db.session.rollback()
+        print(e)
         return jsonify({
             "error": "Database error occurred",
             "details": str(e)

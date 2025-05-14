@@ -5,20 +5,22 @@ from utils.routes import auth_bp
 from flask_jwt_extended import  JWTManager
 from flask_migrate import Migrate
 from flask_cors import CORS
-
+from dotenv import load_dotenv
+import os
 
 
 def create_app():
+    load_dotenv() 
     app = Flask(__name__)
     app.config.from_object(Config)
 
-
+    app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('SQLALCHEMY_DATABASE_URI')
     app.config['JWT_ALGORITHM'] = app.config['JWT_ALGORITHM']
     app.config['JWT_PRIVATE_KEY'] = app.config['JWT_PRIVATE_KEY']
     app.config['JWT_PUBLIC_KEY'] = app.config['JWT_PUBLIC_KEY']
     app.config['JWT_TOKEN_LOCATION'] = ['headers']
     app.config['JWT_HEADER_TYPE'] = 'Bearer'
-    app.config['JWT_ACCESS_TOKEN_EXPIRES'] = 3600  # 1 hour
+    app.config['JWT_ACCESS_TOKEN_EXPIRES'] = 3600  
     
     db.init_app(app)
     migrate = Migrate(app, db)

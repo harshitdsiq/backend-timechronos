@@ -5,8 +5,8 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from werkzeug.security import check_password_hash
 from utils.schema.models import db, Company
 from utils.controllers import register_company,update_company_details
-
-from flask_jwt_extended import create_access_token
+from utils.api.authentication.auth_helper import passwordHelper, AccessTokens, jwt
+from flask_jwt_extended import create_access_token,create_refresh_token
 
 company_bp = Blueprint('company', __name__, url_prefix='/company')
 
@@ -35,15 +35,25 @@ def company_login():
         return jsonify({"error": "Email and password are required"}), 400
 
     company = Company.query.filter_by(contact_email=contact_email).first()
-    if not company or not check_password_hash(company.password, password):
+    
+    if not company:
         return jsonify({"error": "Invalid email or password"}), 401
+    
+    try:
+        if not passwordHelper.check_password(company.password, password):
+            return jsonify({"error": "Invalid email or password"}), 401
+    except (TypeError, ValueError) as e:
+        # Handle cases where the stored hash is invalid
+        return jsonify({"error": "Password verification failed", "details": str(e)}), 500
 
     access_token = create_access_token(identity=str(company.id))
+    refresh_token = create_refresh_token(identity=str(company.id))
 
     return jsonify({
         "message": "Login successful",
         "access_token": access_token,
-        "company_id": company.id
+        "company_id": company.id,
+        "refresh_token": refresh_token,
     }), 200
 
 # Update Profile
@@ -83,3 +93,15 @@ def get_company():
         "contact_number": company.contact_number,
         "address": company.address
     }), 200
+
+
+@company_bp.route("/refresh-token", methods=['POST'])
+@jwt_required(refresh=True)
+def refresh_token():
+    current_company_id = get_jwt_identity()
+    access_token = create_access_token(identity=current_company_id)
+    return jsonify(access_token=access_token), 200
+
+
+# @company_bp.route("/logout", methods=['POST'])
+# @jwt_required()   
