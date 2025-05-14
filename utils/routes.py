@@ -10,7 +10,6 @@ from flask_jwt_extended import (
 
 )
 from datetime import timedelta
-
 auth_bp = Blueprint('auth', __name__)
 
 
@@ -33,6 +32,7 @@ def signup():
         phone=data.get('phone')
     )
 
+
 @auth_bp.route('/login', methods=['POST'])
 def login():
     data = request.get_json()
@@ -43,27 +43,37 @@ def login():
     response, status_code = login_user(
         email=data['email'],
         password=data['password']
-        
     )
 
     if status_code != 200:
         return jsonify(response), status_code
 
-    identity = str(response['user']['id'])  
+    user_data = response['user']
+    identity = str(user_data['id'])
 
     additional_claims = {
-        'company_id': response['user']['company_id'],
-        'role': response['user']['role']
+        "company_id": user_data['company_id'],
+        "role": user_data['role']
     }
 
     access_token = create_access_token(identity=identity, additional_claims=additional_claims)
-
+    refresh_token = create_refresh_token(identity=identity, additional_claims=additional_claims)
 
     return jsonify({
         "message": "Login successful",
         "access_token": access_token,
-        "user": response['user']
+        "refresh_token": refresh_token,
+        "user": user_data
     }), 200
+
+# @auth_bp.route('/whoami', methods=['GET'])
+# @jwt_required()
+# def whoami():
+#     claims = get_jwt()
+#     return jsonify({
+#         "company_id": claims["company_id"],
+#         "role": claims["role"]
+#     })
 
 @auth_bp.route('/users', methods=['GET'])
 @jwt_required()
@@ -197,6 +207,7 @@ def get_company():
 
 #client
 @auth_bp.route('/client', methods=['GET'])
+@jwt_required()
 def get_all_clients_route():
     response, status_code = get_all_clients()
     return jsonify(response), status_code
@@ -230,6 +241,7 @@ def client_login():
 
 
 @auth_bp.route('/client/update/<int:client_id>', methods=['PUT'])
+@jwt_required()
 def update_client(client_id):
     data = request.get_json()
     response, status = update_client_logic(client_id, data)
@@ -249,6 +261,7 @@ def create_new_project():
     response,status_code = create_project(data)
     return jsonify(response),status_code
 
+
 @auth_bp.route("/active-projects/<int:client_id>",methods=['GET'])
 def get_client_projects(client_id):
     return get_projects_by_client(client_id)
@@ -259,6 +272,7 @@ def update_project(project_id):
     data = request.get_json()
     response, status_code = update_project_logic(project_id, data)
     return jsonify(response), status_code
+
 
 @auth_bp.route("/projects/<int:project_id>", methods=['DELETE'])
 def delete_project(project_id):

@@ -458,6 +458,7 @@ def update_client_logic(client_id, data):
             }
         }, 200
     except Exception as e:
+        #print(e)
         db.session.rollback()
         return {"error": f"Update failed: {str(e)}"}, 500
     

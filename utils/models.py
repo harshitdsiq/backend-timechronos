@@ -7,6 +7,7 @@ from sqlalchemy import Enum as SQLAlchemyEnum
 
 db = SQLAlchemy()
 
+
 class UserRole(PyEnum):
     ADMIN = 'admin'
     MANAGER = 'manager'
@@ -44,7 +45,16 @@ class Company(db.Model):
     password = db.Column(db.String(255))
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
 
-
+# class Country(db.Model):
+#     __tablename__ = 'country'
+    
+#     id = db.Column(db.Integer, primary_key=True),
+#     name = db.Column(db.String(100)), 
+#     nicename = db.Column(db.String(100)),
+#     iso3 = db.Column(db.String(3)),
+#     iso = db.Column(db.String(2)),
+#     numcode = db.Column(db.Integer),
+#     phonecode = db.Column(db.String(10))
 
 class User(db.Model):
     __tablename__ = 'users1'
@@ -143,3 +153,13 @@ class Role(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     company = db.relationship('Company', backref=db.backref('roles', lazy=True))
+
+
+class Country(db.Model):
+    __tablename__ = 'country'
+    name = db.Column(db.String(100), primary_key=True)
+    nicename = db.Column(db.String(100))
+    iso3 = db.Column(db.String(3))
+    iso = db.Column(db.String(2))
+    numcode = db.Column(db.Integer)
+    phonecode = db.Column(db.String(10))
