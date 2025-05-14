@@ -8,7 +8,8 @@ venv/
 env/
 ENV/
 .venv/
-
+private.pem
+public.pem
 # Environment variables
 *.env
 .env

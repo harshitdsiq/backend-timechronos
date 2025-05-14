@@ -1,4 +1,4 @@
-from .models import db, Company, User , Client, Project,ProjectStatus,Task,Timesheet,TimesheetStatus,UserRole,Role
+from .schema.models import db, Company, User , Client, Project,Task,Timesheet,Role
 from datetime import datetime
 from werkzeug.security import generate_password_hash,check_password_hash
 from sqlalchemy.exc import IntegrityError,SQLAlchemyError
@@ -302,7 +302,7 @@ def create_task(project_id, name, code, billable, start_date, end_date, descript
 
 def create_timesheet(user_id, week_start):
     try:
-        from .models import User  
+        from .schema.models import User  
         if not User.query.get(user_id):
             return {"error": "User not found"}, 404
 
