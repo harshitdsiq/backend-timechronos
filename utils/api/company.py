@@ -7,10 +7,10 @@ from utils.schema.models import db, Company
 from utils.controllers import register_company,update_company_details
 from utils.api.authentication.auth_helper import passwordHelper, AccessTokens, jwt
 from flask_jwt_extended import create_access_token,create_refresh_token
+from utils.schema.models import User
 
 company_bp = Blueprint('company', __name__, url_prefix='/company')
 
-# Company Registration
 @company_bp.route("/register", methods=['POST'])
 def company_register():
     data = request.get_json()
@@ -24,7 +24,6 @@ def company_register():
         address=data.get('address')
     )
 
-# Company Login
 @company_bp.route("/login", methods=['POST'])
 def company_login():
     data = request.get_json()
@@ -38,25 +37,36 @@ def company_login():
     
     if not company:
         return jsonify({"error": "Invalid email or password"}), 401
-    
+
     try:
         if not passwordHelper.check_password(company.password, password):
             return jsonify({"error": "Invalid email or password"}), 401
     except (TypeError, ValueError) as e:
-        # Handle cases where the stored hash is invalid
         return jsonify({"error": "Password verification failed", "details": str(e)}), 500
 
-    access_token = create_access_token(identity=str(company.id))
-    refresh_token = create_refresh_token(identity=str(company.id))
+    user = User.query.filter_by(company_id=company.id).first()
+    if not user:
+        return jsonify({"error": "No user found for this company"}), 404
+
+    additional_claims = {
+        "company_id": company.id,
+        "role": user.role.name,  
+        "email": company.contact_email
+    }
+
+    access_token = AccessTokens.create_access_token(identity=str(company.id), additional_claims=additional_claims)
+    refresh_token = AccessTokens.create_refresh_token(identity=str(company.id),additional_claims=additional_claims)
 
     return jsonify({
+        "first_name": user.first_name,
+        "last_name": user.last_name,
         "message": "Login successful",
         "access_token": access_token,
-        "company_id": company.id,
-        "refresh_token": refresh_token,
+        "refresh_token": refresh_token
     }), 200
 
-# Update Profile
+
+
 @company_bp.route("/update/<int:company_id>", methods=['PUT'])
 @jwt_required()
 def update_company(company_id):

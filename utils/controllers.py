@@ -670,8 +670,10 @@ def get_all_clients():
             "code": client.code,
             "company_id": client.company_id,
             "description": client.description,
+            "status": client.status if hasattr(client, 'status') else 'Active', 
             "created_at": client.created_at.isoformat() if client.created_at else None
         } for client in clients]
+        #print(clients_data)
 
         return {
             "message": "Clients retrieved successfully",

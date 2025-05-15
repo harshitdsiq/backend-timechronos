@@ -16,7 +16,7 @@ class passwordHelper:
             return hashed_password.decode('utf-8')
         except Exception as e:
             return jsonify({'message': 'Error hashing password: ' + str(e)}), 500
-
+    @staticmethod
     def check_password( password, hashed):
         try:
             return bcrypt.checkpw(password.encode('utf-8'), hashed.encode('utf-8'))
@@ -24,27 +24,29 @@ class passwordHelper:
             return jsonify({'message': 'Error checking password: ' + str(e)}), 500
 
 class AccessTokens:
-    def create_access_token(self, user):
-        access_token = create_access_token(identity=str(user.id))
+    @staticmethod
+    def create_access_token( identity, additional_claims=None):
+        access_token = create_access_token(identity=identity, additional_claims=additional_claims)
         jti = get_jti(access_token)
         token = TokenBlacklist(
             jti=jti,
             token_type="access",
-            user_identity=str(user.id),
+            user_identity=identity,
             revoked=False,
             expires=datetime.utcnow() + timedelta(minutes=15)  # Adjust as needed
         )
         db.session.add(token)
         db.session.commit()
         return access_token
-
-    def create_refresh_token(self, user):
-        refresh_token = create_refresh_token(identity=str(user.id))
+    
+    @staticmethod
+    def create_refresh_token( identity, additional_claims=None):
+        refresh_token = create_refresh_token(identity=identity, additional_claims=additional_claims)
         jti = get_jti(refresh_token)
         token = TokenBlacklist(
             jti=jti,
             token_type="refresh",
-            user_identity=str(user.id),
+            user_identity=identity,
             revoked=False,
             expires=datetime.utcnow() + timedelta(days=7)  # Adjust as needed
         )

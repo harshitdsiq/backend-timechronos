@@ -7,7 +7,7 @@ from utils.controllers import (
 )
 from utils.schema.models import User
 from flask_jwt_extended import create_access_token, create_refresh_token
-
+from utils.api.authentication.auth_helper import passwordHelper, AccessTokens
 user_bp = Blueprint('user', __name__, url_prefix='/user')
 
 # --- User Signup ---
@@ -53,8 +53,9 @@ def login():
         "role": user_data['role']
     }
 
-    access_token = create_access_token(identity=identity, additional_claims=additional_claims)
-    refresh_token = create_refresh_token(identity=identity, additional_claims=additional_claims)
+    access_token = AccessTokens.create_access_token(identity=identity, additional_claims=additional_claims)
+    print(f"Access Token: {access_token}")
+    refresh_token = AccessTokens.create_refresh_token(identity=identity, additional_claims=additional_claims)
 
     return jsonify({
         "message": "Login successful",

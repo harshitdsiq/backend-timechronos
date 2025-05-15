@@ -59,6 +59,7 @@ def update_client(client_id):
 
 # Delete client
 @client_bp.route('/delete/<int:client_id>', methods=['DELETE'])
+@jwt_required()
 def delete_client(client_id):
     response, status = delete_client_logic(client_id)
     return jsonify(response), status
