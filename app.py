@@ -20,7 +20,8 @@ def create_app():
     app.config['JWT_PUBLIC_KEY'] = app.config['JWT_PUBLIC_KEY']
     app.config['JWT_TOKEN_LOCATION'] = ['headers']
     app.config['JWT_HEADER_TYPE'] = 'Bearer'
-    app.config['JWT_ACCESS_TOKEN_EXPIRES'] = 3600  
+    app.config['JWT_ACCESS_TOKEN_EXPIRES'] = 900  
+    app.config['JWT_REFRESH_TOKEN_EXPIRES'] = 3600
     
     db.init_app(app)
     migrate = Migrate(app, db)
@@ -76,6 +77,9 @@ app.register_blueprint(timesheet_bp)
 from utils.api.users import user_bp
 app.register_blueprint(user_bp)
 
+from utils.api.auth import login_bp
+app.register_blueprint(login_bp)
+
 
 if __name__ == '__main__':
-    app.run(debug=True,host='0.0.0.0')
+    app.run(debug=True,host='0.0.0.0',port=5000)

@@ -87,7 +87,6 @@ def register_company(name, industry, email_domain, contact_email,
         db.session.commit()
         
 
-        # Create default admin role
         admin_role = Role(
             company_id=new_company.id,
             name='Admin',
@@ -385,15 +384,7 @@ def update_company_details(company_id, name, email_domain, contact_email, contac
                 "address": company.address
             }
         }), 200
-             
-
-
-
-
-
-
-
-             
+                
     except IntegrityError as e:
         db.session.rollback()
         return jsonify({
@@ -401,6 +392,8 @@ def update_company_details(company_id, name, email_domain, contact_email, contac
             "details": str(e)
         }), 500
     
+
+
 def get_company_details(company_id):
     company = Company.query.get(company_id)
 
@@ -688,3 +681,33 @@ def get_all_clients():
     except Exception as e:
         print(e)
         return {"error": f"Unexpected error: {str(e)}"}, 500
+    
+def get_all_clients_by_id(client_id):
+    try:
+        client = Client.query.get(client_id)
+        if not client:
+            return {"error": "Client not found"}, 404
+
+        client_data = {
+            "id": client.id,
+            "name": client.name,
+            "code": client.code,
+            "company_id": client.company_id,
+            "description": client.description,
+            "status": client.status if hasattr(client, 'status') else 'Active', 
+            "created_at": client.created_at.isoformat() if client.created_at else None
+        }
+
+        return {
+            "message": "Client retrieved successfully",
+            "client": client_data
+        }, 200
+
+    except SQLAlchemyError as e:
+        print(e)
+        return {"error": f"Database error: {str(e)}"}, 500
+
+    except Exception as e:
+        print(e)
+        return {"error": f"Unexpected error: {str(e)}"}, 500
+    

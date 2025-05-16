@@ -8,7 +8,8 @@ from utils.controllers import (
     register_client,
     login_client,
     update_client_logic,
-    delete_client_logic
+    delete_client_logic,
+    get_all_clients_by_id
 )
 
 client_bp = Blueprint('client', __name__, url_prefix='/client')
@@ -18,6 +19,12 @@ client_bp = Blueprint('client', __name__, url_prefix='/client')
 @jwt_required()
 def get_all_clients_route():
     response, status_code = get_all_clients()
+    return jsonify(response), status_code
+
+@client_bp.route('/<int:client_id>', methods=['GET'])
+@jwt_required()
+def get_client_by_id(client_id):
+    response, status_code = get_all_clients_by_id(client_id)
     return jsonify(response), status_code
 
 # Register new client

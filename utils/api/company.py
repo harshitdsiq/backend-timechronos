@@ -6,8 +6,9 @@ from werkzeug.security import check_password_hash
 from utils.schema.models import db, Company
 from utils.controllers import register_company,update_company_details
 from utils.api.authentication.auth_helper import passwordHelper, AccessTokens, jwt
-from flask_jwt_extended import create_access_token,create_refresh_token
+from flask_jwt_extended import create_access_token,create_refresh_token,get_jwt
 from utils.schema.models import User
+from utils.schema.models import UserRole
 
 company_bp = Blueprint('company', __name__, url_prefix='/company')
 
@@ -70,39 +71,63 @@ def company_login():
 @company_bp.route("/update/<int:company_id>", methods=['PUT'])
 @jwt_required()
 def update_company(company_id):
-    current_company_id = get_jwt_identity()
+    try:
+        # Get the current user's ID from JWT
+        current_user_id = get_jwt_identity()
+        
+        # Get the user's record to find their company ID
+        current_user = User.query.get(current_user_id)
+        if not current_user:
+            return jsonify({"error": "User not found"}), 404
 
-    if str(current_company_id) != str(company_id):
-        return jsonify({"error": "Unauthorized"}), 403
+        # Verify the user belongs to the company they're trying to update
+        if current_user.company_id != company_id:
+            return jsonify({"error": "Unauthorized - You don't belong to this company"}), 403
 
-    data = request.get_json()
-    return update_company_details(
-        company_id=company_id,
-        name=data.get('name'),
-        email_domain=data.get('email_domain'),
-        contact_email=data.get('contact_email'),
-        contact_number=data.get('contact_number'),
-        address=data.get('address')
-    )
+        # Verify user has admin role
+        if current_user.role != UserRole.ADMIN:  # Assuming you have UserRole enum
+            return jsonify({"error": "Unauthorized - Admin access required"}), 403
+
+        data = request.get_json()
+        return update_company_details(
+            company_id=company_id,
+            name=data.get('name'),
+            email_domain=data.get('email_domain'),
+            contact_email=data.get('contact_email'),
+            contact_number=data.get('contact_number'),
+            address=data.get('address')
+        )
+        
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 # Get Company Info
 @company_bp.route("/profile", methods=['GET'])
 @jwt_required()
 def get_company():
-    company_id = get_jwt_identity()
-    company = Company.query.get(company_id)
+    try:
+        # Get company_id directly from JWT claims
+        claims = get_jwt()
+        company_id = claims.get('company_id')
+        
+        if not company_id:
+            return jsonify({"error": "Company ID missing in token"}), 400
 
-    if not company:
-        return jsonify({"error": "Company not found"}), 404
+        company = Company.query.get(company_id)
+        if not company:
+            return jsonify({"error": "Company not found"}), 404
 
-    return jsonify({
-        "company_id": company.id,
-        "name": company.name,
-        "email_domain": company.email_domain,
-        "contact_email": company.contact_email,
-        "contact_number": company.contact_number,
-        "address": company.address
-    }), 200
+        return jsonify({
+            "company_id": company.id,
+            "name": company.name,
+            "email_domain": company.email_domain,
+            "contact_email": company.contact_email,
+            "contact_number": company.contact_number,
+            "address": company.address
+        }), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 @company_bp.route("/refresh-token", methods=['POST'])
